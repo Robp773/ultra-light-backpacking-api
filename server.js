@@ -16,17 +16,30 @@ const {CLIENT_ORIGIN} = require('./config');
 
 app.use(cors({origin: CLIENT_ORIGIN}));
 
-// retrive array of all list names for user
+// retrive overview data for all lists by user
 app.get('/list-state/name-list', (req, res)=>{
-  let nameArray = [];
   List
     .find({})
     .exec()
-    .then((listState)=>{
-      for(let i = 0; i< listState.length; i++){
-        nameArray.push(listState[i].listName);
-      }
-      res.json(nameArray);
+    .then((allLists)=>{
+
+      const result = allLists.map((list)=>{
+        // list is a single entire array of a list's state
+        let itemTotal = 0;
+        let weightTotal = 0;
+        const {hiking, clothing, navigation, shelter, sleep, cooking, water, hygiene, firstaid, misc} = list;
+        const totalArray = [hiking, clothing, navigation, shelter, sleep, cooking, water, hygiene, firstaid, misc];
+        for(let i = 0; i<totalArray.length; i++){
+          itemTotal += totalArray[i].length;          
+        }
+        totalArray.map((category)=>{
+          for(let i=0; i<category.length; i++){
+            weightTotal += category[i].weight;
+          }
+        });
+        return {listName: list.listName, weightTotal: (weightTotal *.0625).toFixed(2), itemTotal: itemTotal};
+      });
+      return res.json(result);
     })
     .catch(
       err => {
@@ -39,10 +52,7 @@ app.get('/list-state/:name', (req, res)=>{
   List
     .findOne({listName: req.params.name})
     .then((state)=>{
-      // if(state === null){
-      //   res.status(404)
-      //     .end();
-      // }
+
       res.json(state);
 
     })
@@ -57,9 +67,9 @@ app.post('/list-state', (req, res)=>{
   List
     .create({     	
       listName: req.body.listName,
-      totalWeight: 0,
-      totalItems: 0,
       weightGoal: 0,
+      itemTotal: 0,
+      weightTotal: 0,
       hiking: [],
       clothing: [],
       navigation: [],
@@ -68,7 +78,7 @@ app.post('/list-state', (req, res)=>{
       cooking:[],
       water:[],
       hygiene:[],
-      firstAid: [],
+      firstaid: [],
       misc: []
     })
     .then(function(post) {
@@ -79,25 +89,7 @@ app.post('/list-state', (req, res)=>{
 // for updating state on 'save' presses 
 app.put('/list-state/:listname', (req,res)=>{
   List
-    .findOneAndUpdate({listName: req.params.listname}, 
-      
-      {
-        'totalWeight': 0,
-        'totalItems': 0,
-        'weightGoal': req.body.weightGoal,
-        'misc': req.body.misc,
-        'firstAid': req.body.firstAid,
-        'hygiene': req.body.hygiene,
-        'water': req.body.water,
-        'cooking': req.body.cooking,
-        'sleep': req.body.sleep,
-        'shelter': req.body.shelter,
-        'navigation': req.body.navigation,
-        'clothing': req.body.clothing,
-        'hiking': req.body.hiking
-      },
-      
-      {new: true})
+    .findOneAndUpdate({listName: req.params.listname}, req.body, {new: true})
     
     .then(function(updatedItem) {
       res.status(201).json(updatedItem)
@@ -115,8 +107,8 @@ app.delete('/list-state/:deletename', (req, res)=>{
       res.status(204).end();
     });
 });
-
 let server;
+// default parameters
 function runServer(databaseUrl = DATABASE_URL, port = PORT) {
   return new Promise((resolve, reject) => {
     mongoose.connect(databaseUrl, err => {
