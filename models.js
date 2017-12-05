@@ -3,10 +3,7 @@ const mongoose = require('mongoose');
 const packingListState = mongoose.Schema(
   {
     listName: String,
-    totalWeight: Number,
-    totalItems: Number,
     weightGoal: Number,
-
     hiking: [],
     clothing: [],
     navigation: [],
@@ -15,7 +12,7 @@ const packingListState = mongoose.Schema(
     cooking:[],
     water: [],
     hygiene: [],
-    firstAid: [],
+    firstaid: [],
     misc: []
   }
 );
