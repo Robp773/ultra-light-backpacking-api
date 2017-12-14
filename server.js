@@ -2,21 +2,21 @@
 
 const express = require('express');
 const app = express();
+
 const {DATABASE_URL, PORT} = require('./config');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const {List} = require('./models');
-require('dotenv').config();
-
-mongoose.promise = global.promise;
-app.use(bodyParser.json());
 const cors = require('cors');
-
 const {CLIENT_ORIGIN} = require('./config');
 
+require('dotenv').config();
+mongoose.promise = global.promise;
+
+app.use(bodyParser.json());
 app.use(cors({origin: CLIENT_ORIGIN}));
 
-// retrive overview data for all lists by user
+// retrieve overview data for all lists by user
 app.get('/list-state/name-list', (req, res)=>{
   List
     .find({})
@@ -68,8 +68,6 @@ app.post('/list-state', (req, res)=>{
     .create({     	
       listName: req.body.listName,
       weightGoal: 0,
-      itemTotal: 0,
-      weightTotal: 0,
       hiking: [],
       clothing: [],
       navigation: [],
@@ -140,9 +138,11 @@ function closeServer() {
     });
   });
 }
+
 if (require.main === module) {
   runServer().catch(err => console.error(err));
 }
+
 module.exports = {
   app,
   runServer,
