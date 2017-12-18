@@ -1,4 +1,11 @@
- language: node_js
- node_js: node
- services:
-     - mongodb
+language: node_js
+node_js: node
+services:
+- mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: Dl38H5UnbRJaDe732OHAoAIvUF5pA30t++FwGzQakYJP2enf8Pk6jqLXItwT4g/tKsm3vh8xicbSIxm4dQaopRNgN/Uw6VLed4P3ADJGg1R3rfb/OJi57KThLwfTQG3ExVlglOYsZZUYvE2qsW8nzDBBfXgWlxmuFOC/kFE/CB4fPlIW19QVtfpHAY83IgrbXEgMaeCUKn4IzQQTTbvuUL05ufom5rYE13hnYawtyWO+7vXWzZ+y28PeolcBtx6lNhpcfdm9CCDGRJuKkZvdB8ysJhD7KpHUZyhCC31RjHUu2lD2LLt2gAPE+ZnCvH+p2calaXiePOvGnMXXNux8bvPFHISfaXtE5ZRhTTqx6vMJHF3FN4+D1g9khvvJXQrF5UBk6T1xwQv9sdAjsV0TWN2Gim7iWwApC9Fvk1wBhKelaoaz2z6O2yzjXjNiOC9uytmiQPhpAIcccDln0fQWGmGxm9TN9uqxuaWxkd4NjF4QvMt50TqNK1tbGEjr4agIVCmI0e9voJnab0+HynOghQTf5e+wBaVMNA/gWmCgMNVxS3aZ124MAyUUbssTyS/EA2ApvOzdaVgzXa3KkyJvz1I/ungXok7RKmSZqdaGzvCkTmGmbr00KTGhX8PQB07iVIWatUIBfkho7qRuTmWgnd1C9nzAPAWYC7yZjFI1Wzs=
+  app: lit-hamlet-54666
+  on:
+    repo: Robp773/ultra-light-backpacking-api
