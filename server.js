@@ -105,14 +105,16 @@ app.delete('/list-state/:deletename', (req, res)=>{
       res.status(204).end();
     });
 });
-let server;
+let server; 
 // default parameters
 function runServer(databaseUrl = DATABASE_URL, port = PORT) {
   return new Promise((resolve, reject) => {
-    mongoose.connect(databaseUrl, err => {
+    mongoose.connect(databaseUrl, { useMongoClient: true, /* other options */ }, err => {
       if (err) {
         return reject(err);
       }
+
+     
       server = app.listen(port, () => {
         console.log(`Your app is listening on port ${port}`);
         resolve();
