@@ -14,7 +14,7 @@ require('dotenv').config();
 mongoose.promise = global.promise;
 
 app.use(bodyParser.json());
-app.use(cors({origin: CLIENT_ORIGIN}));
+app.use(cors());
 
 // retrieve overview data for all lists by user
 app.get('/list-state/name-list', (req, res)=>{
@@ -106,15 +106,12 @@ app.delete('/list-state/:deletename', (req, res)=>{
     });
 });
 let server; 
-// default parameters
 function runServer(databaseUrl = DATABASE_URL, port = PORT) {
   return new Promise((resolve, reject) => {
     mongoose.connect(databaseUrl, err => {
       if (err) {
         return reject(err);
-      }
-
-     
+      }    
       server = app.listen(port, () => {
         console.log(`Your app is listening on port ${port}`);
         resolve();
@@ -150,4 +147,3 @@ module.exports = {
   runServer,
   closeServer
 };
-
