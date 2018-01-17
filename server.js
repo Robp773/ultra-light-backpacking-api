@@ -9,17 +9,48 @@ const bodyParser = require('body-parser');
 const {List} = require('./models');
 const cors = require('cors');
 const {CLIENT_ORIGIN} = require('./config');
+const morgan = require('morgan');
+
 
 require('dotenv').config();
 mongoose.promise = global.promise;
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use(morgan('common'));
+
+
+const passport = require('passport');
+
+const { router: usersRouter } = require('./users');
+const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
+
+mongoose.Promise = global.Promise;
+
+passport.use(localStrategy);
+passport.use(jwtStrategy);
+
+app.use('/api/users/', usersRouter);
+app.use('/api/auth/', authRouter);
+
+const jwtAuth = passport.authenticate('jwt', { session: false });
+
+// A protected endpoint which needs a valid JWT to access it
+app.get('/api/protected', jwtAuth, (req, res) => {
+  return res.json({
+    data: 'rosebud'
+  });
+});
+
+app.use('*', (req, res) => {
+  return res.status(404).json({ message: 'Not Found' });
+});
+
 
 // retrieve overview data for all lists by user
 app.get('/list-state/name-list', (req, res)=>{
   List
-    .find({})
+    .find({userId: req.body.userId})
     .exec()
     .then((allLists)=>{
 
@@ -63,9 +94,11 @@ app.get('/list-state/:name', (req, res)=>{
       });
 });
 // for initializing the state of a list server side after user names a list
+// added userId
 app.post('/list-state', (req, res)=>{
   List
-    .create({     	
+    .create({
+      userId: req.body.userId,	
       listName: req.body.listName,
       weightGoal: 0,
       hiking: [],
