@@ -6,10 +6,11 @@ const app = express();
 const {DATABASE_URL, PORT} = require('./config');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const {List} = require('./models');
+const {List, User} = require('./models');
 const cors = require('cors');
 const {CLIENT_ORIGIN} = require('./config');
-const morgan = require('morgan');
+const bcrypt = require('bcryptjs');
+
 
 
 require('dotenv').config();
@@ -17,40 +18,66 @@ mongoose.promise = global.promise;
 
 app.use(bodyParser.json());
 app.use(cors());
-app.use(morgan('common'));
+// Creating a new user by entering username/password in "Sign Up"
+app.post('/users', (req, res)=>{
+  User.find({userId: req.body.userId})
+    .then((result)=>{
+      if(result.length > 1){
+        res.json({taken: true, comment: 'User Name Already Taken, Please Choose Another'});
+      }
+    
+      User
+        .create({userId: req.body.userId, password: bcrypt.hashSync(req.body.password, 8)});
+      res.json({taken: false, comment: `Account created for ${req.body.userId}`})
+        .catch(
+          err => {
+            console.error(err);
+            res.status(500).json({message: 'Internal server error'});
+          });
+    });
+});
+// Returning users logging in with username/password
+app.post('/login', (req, res)=>{
+  User
+    .findOne({userId: req.body.userId})
+    .exec()
+    .then((response)=>{
+      let answer = bcrypt.compare(req.body.password, response.password);
+      return answer
+        .then((answer)=>{
 
-
-const passport = require('passport');
-
-const { router: usersRouter } = require('./users');
-const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
-
-mongoose.Promise = global.Promise;
-
-passport.use(localStrategy);
-passport.use(jwtStrategy);
-
-app.use('/api/users/', usersRouter);
-app.use('/api/auth/', authRouter);
-
-const jwtAuth = passport.authenticate('jwt', { session: false });
-
-// A protected endpoint which needs a valid JWT to access it
-app.get('/api/protected', jwtAuth, (req, res) => {
-  return res.json({
-    data: 'rosebud'
-  });
+          if(!answer){
+            res.json({authorized: false, comment: 'Incorrect User Name or Password'});
+          }
+          else if(answer){
+            res.json({authorized: true, comment: `Logged In as ${req.body.userId}`});
+          }
+        });
+    }).catch(
+      err => {
+        console.error(err);
+        res.status(500).json({message: 'Internal server error'});
+      });
 });
 
-app.use('*', (req, res) => {
-  return res.status(404).json({ message: 'Not Found' });
+app.get('/users', (req, res)=>{
+  User 
+    .find({})
+    .then((users)=>{
+      console.log(users);
+      res.sendStatus(200).end();
+    })
+    .catch(
+      err => {
+        console.error(err);
+        res.status(500).json({message: 'Internal server error'});
+      });
 });
-
 
 // retrieve overview data for all lists by user
-app.get('/list-state/name-list', (req, res)=>{
+app.get('/list-state/name-list/:userId', (req, res)=>{
   List
-    .find({userId: req.body.userId})
+    .find({userId: req.params.userId})
     .exec()
     .then((allLists)=>{
 

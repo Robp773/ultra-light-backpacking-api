@@ -1,6 +1,12 @@
 'use strict';
 // added user id property 
 const mongoose = require('mongoose');
+const userState = mongoose.Schema(
+  {
+    userId: String,
+    password: String 
+  }
+);
 const packingListState = mongoose.Schema(
   { 
     userId: String,
@@ -20,4 +26,5 @@ const packingListState = mongoose.Schema(
 );
 
 const List = mongoose.model('List', packingListState);
-module.exports = {List};
+const User = mongoose.model('User', userState);
+module.exports = {List, User};
