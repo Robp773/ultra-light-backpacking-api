@@ -11,8 +11,6 @@ const cors = require('cors');
 const {CLIENT_ORIGIN} = require('./config');
 const bcrypt = require('bcryptjs');
 
-
-
 require('dotenv').config();
 mongoose.promise = global.promise;
 
@@ -25,9 +23,7 @@ app.post('/users', (req, res)=>{
       if(result.length > 1){
         res.json({taken: true, comment: 'User Name Already Taken, Please Choose Another'});
       }
-    
-      User
-        .create({userId: req.body.userId, password: bcrypt.hashSync(req.body.password, 8)});
+      User.create({userId: req.body.userId, password: bcrypt.hashSync(req.body.password, 8)});
       res.json({taken: false, comment: `Account created for ${req.body.userId}`})
         .catch(
           err => {
@@ -42,6 +38,9 @@ app.post('/login', (req, res)=>{
     .findOne({userId: req.body.userId})
     .exec()
     .then((response)=>{
+      if(response === null){
+        return res.json({authorized: false, comment: 'Incorrect User Name or Password'});
+      }
       let answer = bcrypt.compare(req.body.password, response.password);
       return answer
         .then((answer)=>{
@@ -64,7 +63,6 @@ app.get('/users', (req, res)=>{
   User 
     .find({})
     .then((users)=>{
-      console.log(users);
       res.sendStatus(200).end();
     })
     .catch(
