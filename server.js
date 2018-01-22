@@ -20,7 +20,7 @@ app.use(cors());
 app.post('/users', (req, res)=>{
   User.find({userId: req.body.userId})
     .then((result)=>{
-      if(result.length > 1){
+      if(result.length >= 1){
         res.json({taken: true, comment: 'User Name Already Taken, Please Choose Another'});
       }
       User.create({userId: req.body.userId, password: bcrypt.hashSync(req.body.password, 8)});
@@ -104,9 +104,9 @@ app.get('/list-state/name-list/:userId', (req, res)=>{
       });
 });
 // retrieve individual list after user click on a name from the list
-app.get('/list-state/:name', (req, res)=>{
+app.get('/list-state/:user/:name', (req, res)=>{
   List
-    .findOne({listName: req.params.name})
+    .findOne({userId: req.params.user, listName: req.params.name})
     .then((state)=>{
 
       res.json(state);
